@@ -1,3 +1,4 @@
+
 ###
 ### command-line arguments
 ###
@@ -24,7 +25,7 @@ opts.register('dumpPython', None,
               vpo.VarParsing.varType.string,
               'path to python file with content of cms.Process')
 
-opts.register('output', 'pfHCNTuple.root',
+opts.register('output', 'pfHC_Online_NTuple.root',
               vpo.VarParsing.multiplicity.singleton,
               vpo.VarParsing.varType.string,
               'path to output ROOT file')
@@ -36,12 +37,14 @@ opts.register('verbosity', 0,
 
 opts.parseArguments()
 
+
 ###
 ### HLT configuration
 ###
+from JMETriggerAnalysis.Common.configs.HLT_dev_CMSSW_14_2_0_GRun_configDump import *
+##from JMETriggerAnalysis.Common.configs.HLT_dev_CMSSW_14_0_0_GRun_configDump import *
+##from JMETriggerAnalysis.Common.configs.HLT_dev_CMSSW_13_3_0_GRun_configDump import *
 
-from HLT_dev_CMSSW_13_0_0_GRun_configDump import *
-#from HLT_dev_CMSSW_13_0_0_GRun_configDump import cms, process
 
 # remove cms.OutputModule objects from HLT config-dump
 for _modname in process.outputModules_():
@@ -78,6 +81,7 @@ print('-'*108)
 # remove FastTimerService
 del process.FastTimerService
 
+
 ###
 ### PFHC-specific paths
 ###
@@ -106,29 +110,46 @@ process.particleFlowSimParticle = cms.EDProducer('PFSimParticleProducer',
 )
 
 process.pfHadCalibNTuple = cms.EDAnalyzer('PFHadCalibNTuple',
-  TTreeName = cms.string('Candidates'),
+  TTreeName  = cms.string('s'),
+  TTreeTitle = cms.string('PFCalibration'),
+
+  printDetailLog = cms.bool(False),
 
   genParticles = cms.InputTag('genParticles'),
   pfSimParticles = cms.InputTag('particleFlowSimParticle'),
   recoPFCandidates = cms.InputTag('hltParticleFlow'),
 
   genParticleStatus = cms.int32(1), # status code of selected GEN particles
-  genParticlePdgId = cms.int32(-211), # pdgID of selected GEN particles
+  genParticlePdgId = cms.int32(-211), # pdgID of selected GEN particles (-211 = charged hadron)
   genParticleIsoMinDeltaR = cms.double(1.0), # min deltaR between "isolated" GEN particles and other GEN particles
 
   minPt = cms.double(1.00), # min pt
   minTrackP = cms.double(1.00), # min track momentum
   minTrackPt = cms.double(1.00), # min track transverse momentum
-  minCaloEnergy = cms.double(0.5), # min ecal+hcal energy
+  ##minCaloEnergy = cms.double(0.5),
+  minCaloEnergy = cms.double(1.00), # min ecal+hcal energy
   maxECalEnergy = cms.double(1e12), # max ecal energy
 
   # min nb of pixel and pixel+strip hits (per track-eta range)
-  minPixelHits = cms.vuint32(2, 2, 2, 2, 2),
-  #minTrackerHits = cms.vuint32(14, 17, 20, 17, 10),
-  minTrackerHits = cms.vuint32(2, 2, 2, 2, 2),
+  # --> which corresponds to hitPattern.numberOfValidPixelHits()
+  ####minPixelHits = cms.vuint32(2, 2, 2, 2, 2),
+  minPixelHits = cms.vuint32(4, 4, 4, 4, 4),
+  # In run3, HLT has only 3,4 pixel hits tracks
+  # https://mattermost.web.cern.ch/cms-jme-pog/pl/8oteynsbk7f39kn3zdrniidyja
+  # https://mattermost.web.cern.ch/cms-jme-pog/pl/i6hogtich7bricpp5g9i954bir
+  # "worst" case of 3 pixel hit:
+  #     --> either 3 pixel + at least one strip hit. Usually this one strip hit is enough to improve the reconstruction from fakes Pixel tracks with 3 hits
+  # 4 pixel hits case:
+  #     --> these are already pretty pure.
+
+  #minTrackerHits = cms.vuint32(14, 17, 20, 17, 10), # Offline Criterion
+  minTrackerHits = cms.vuint32(2, 2, 2, 2, 2), # HLT Criterion
+  # -->which corresponds to hitPattern.numberOfValidTrackerHits()
   maxEtaForMinTrkHitsCuts = cms.vdouble(1.4, 1.6, 2.0, 2.4, 2.6),
 
   usePFBlockElements = cms.bool(True),
+
+  rootOutputFile = cms.string(opts.output),
 )
 
 process.pfSimParticleSeq = cms.Sequence(process.particleFlowSimParticle)
@@ -138,13 +159,6 @@ process.schedule.append(process.pfSimParticlePath)
 process.pfHadCalibNTupleSeq = cms.Sequence(process.pfHadCalibNTuple)
 process.pfHadCalibNTupleEndPath = cms.EndPath(process.pfHadCalibNTupleSeq)
 process.schedule.append(process.pfHadCalibNTupleEndPath)
-
-###
-### updating Phase 0 HCAL thresholds
-###
-
-#process.hltParticleFlowRecHitHBHE.producers[0].qualityTests[0].name = "PFRecHitQTestHCALThresholdVsDepth"
-#del process.hltParticleFlowRecHitHBHE.producers[0].qualityTests[0].threshold
 
 
 ###
@@ -168,11 +182,14 @@ if opts.inputFiles:
   process.source.fileNames = opts.inputFiles
 else:
   process.source.fileNames = [
-		'/store/mc/Run3Winter23Digi/SinglePionGun_E0p2to200/GEN-SIM-RAW/NoPUGTv3_126X_mcRun3_2023_forPU65_v3-v2/2560000/01723c2c-b1fa-456f-9102-c8781ee0e36d.root',
+      '/store/mc/Run3Winter25Digi/Pi_Par-E-0p2to200_PGun/GEN-SIM-RAW/NoPU_142X_mcRun3_2025_realistic_v7-v1/2820000/78bda28b-2bc3-47ab-a099-12d0bd806c91.root'
   ]
 
-# output file
-process.TFileService = cms.Service('TFileService', fileName = cms.string(opts.output))
+
+###
+### output file
+###
+####process.TFileService = cms.Service('TFileService', fileName = cms.string(opts.output))
 
 # dump content of cms.Process to python file
 if opts.dumpPython is not None:

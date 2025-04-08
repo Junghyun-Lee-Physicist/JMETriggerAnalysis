@@ -56,7 +56,9 @@ If the test runs sucessfuly, you can then inspect the output root file `test_jra
 
 Once all looks good you can submit your crab jobs. 
 ```bash
-crab submit -c crab/my_crab_submission_file.py
+sh crabForNtupleGen/check_PFHC_GT.sh # Check PFCalibration.db's GT
+sh crabForNtupleGen/prepareCrabEnv.sh # Prapare Crab Env
+python3 crabForNtupleGen/multicrab_submit.py
 ```
 You need generally 2 submissions:
 - one for `QCD with noPU` (or equivalently Epsilon PU) sample,
@@ -188,8 +190,9 @@ You can inspect it and for example make sure that the `CaloJets` are produced on
 
 To use this script do:
 ```
-python3 make_condor_scripts_bpix.py 
-condor_submit sub_jecs_total_forBPix.htc
+sh condorForJEC/proxyForCondor.sh
+python3 condorForJEC/make_condor_scripts.py
+condor_submit sub_jecs_<jobID you set>.htc
 ```
 You should see that the jobs are submitted.
 

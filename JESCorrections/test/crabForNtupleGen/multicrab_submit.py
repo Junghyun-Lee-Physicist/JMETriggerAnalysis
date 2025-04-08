@@ -19,8 +19,10 @@ def getOutputName(input_dataset):
     else:
         print("Substring not found in the input string.")
 
-dataset_flatPU='/QCD_Bin-Pt-15to7000_TuneCP5_13p6TeV_pythia8/Run3Winter25Digi-FlatPU0to120_142X_mcRun3_2025_realistic_v7-v3/GEN-SIM-RAW'
-dataset_noPU='/QCD_Bin-Pt-15to7000_TuneCP5_13p6TeV_pythia8/Run3Winter25Digi-NoPU_142X_mcRun3_2025_realistic_v7-v3/GEN-SIM-RAW'
+jobID='07Apr257_v9Samples'
+
+dataset_flatPU='/QCD_Bin-PT-15to7000_Par-PT-flat2022_TuneCP5_13p6TeV_pythia8/Run3Winter25Digi-FlatPU0to120_142X_mcRun3_2025_realistic_v9-v2/GEN-SIM-RAW'
+dataset_noPU='/QCD_Bin-PT-15to7000_Par-PT-flat2022_TuneCP5_13p6TeV_pythia8/Run3Winter25Digi-NoPU_142X_mcRun3_2025_realistic_v9-v2/GEN-SIM-RAW'
 doPuppiCHS = False
 
 # Note : check bellow outLFNDirBase such that you have a working directory 
@@ -34,7 +36,7 @@ config = config()
 config.section_('General')
 config.General.transferOutputs = True
 config.General.transferLogs = False
-config.General.workArea = 'bpix_crab_dir'
+config.General.workArea = f'crab_forJESC_{jobID}'
 
 config.section_('JobType')
 config.JobType.pluginName  = 'Analysis'
@@ -48,11 +50,14 @@ config.section_('Data')
 config.Data.publication = False
 config.Data.ignoreLocality = False
 config.Data.splitting = 'FileBased' #'Automatic'
-config.Data.unitsPerJob = 1 #200
+config.Data.unitsPerJob = 4 #200
 config.Data.totalUnits = -1
+config.Data.allowNonValidInputDataset = True
 
 config.section_('Site')
-config.Site.storageSite = 'T3_CH_CERNBOX'
+config.Site.storageSite = 'T2_CH_CERN'
+#config.Site.storageSite = 'T3_CH_CERNBOX'
+#config.Site.storageSite = 'T3_KR_KNU'
 config.section_('User')
 
 from CRABAPI.RawCommand import crabCommand
@@ -70,7 +75,8 @@ for bpixMode in ['noBPix','BPix','FPix']:
     for input_dataset in [dataset_flatPU, dataset_noPU]:
         output_requestName = 'JRA_'+getOutputName(input_dataset.split('/')[2])+bpixMode
         config.General.requestName = output_requestName
-        config.Data.outLFNDirBase = '/store/user/%s/JRA_NTuples/%s'%(getUsername(),output_requestName)
+        #config.Data.outLFNDirBase = '/store/user/%s/JESC/JESC_ntuple/250407/%s'%(getUsername(),output_requestName)
+        config.Data.outLFNDirBase = '/store/group/phys_jetmet/%s/JMETriggerAnalysis/JESC/JESC_ntuple/250407_winter25v9/%s'%(getUsername(),output_requestName)
         config.Data.inputDataset = input_dataset
         
         # needed to be able to use pyCfgParams 

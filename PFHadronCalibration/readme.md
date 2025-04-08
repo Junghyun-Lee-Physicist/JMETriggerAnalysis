@@ -33,9 +33,17 @@ cd ${CMSSW_BASE}/src/JMETriggerAnalysis/PFHadronCalibration/test/
 cmsRun pfHadCalibNTuple_cfg.py maxEvents=1000
 ```
 
-which contains information
+To verify the configuration, you can use the following helper scripts:
 
-!! Add information on how to run the NTuple step with crab, HTCondor and/or other batch systems
+- `check_global_tag.sh`: This script prints the Global Tag used in `pfHadCalibNTuple_cfg.py`, corresponding to the HLT menu. Make sure it matches the Global Tag of the input dataset.
+- `get_test_file_from_das.sh`: This script returns the path to one input file from the relevant dataset, which can be used to run `cmsRun` locally for testing.
+
+For large-scale NTuple production, CRAB can be used as follows:
+```
+sh crabForNtupleGen/prepareCrabEnv.sh
+python3 crabForNtupleGen/multiCrab_PFHC_forHLT.py
+```
+This sets up the CRAB environment and submits jobs for NTuple generation.
 
 #### Derivation of PFHCs
 
