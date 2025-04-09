@@ -30,10 +30,11 @@ git cms-addpkg RecoParticleFlow/PFSimProducer
 ## Modify this line:
 ##   --> https://github.com/cms-sw/cmssw/blob/CMSSW_14_2_1/RecoParticleFlow/PFSimProducer/plugins/PFSimParticleProducer.cc#L125
 
-## to
-##  --> edm::ParameterSetDescription psd0;
-##  --> psd0.setUnknown();
-##  --> desc.add<edm::ParameterSetDescription>("ParticleFilter", psd0);
+## [ desc.add<edm::ParameterSetDescription>("ParticleFilter", {}) ]
+##  to
+##    --> edm::ParameterSetDescription psd0;
+##    --> psd0.setUnknown();
+##    --> desc.add<edm::ParameterSetDescription>("ParticleFilter", psd0);
 ####################################################################################
 
 git clone git@github.com:theochatzis/JMETriggerAnalysis.git
