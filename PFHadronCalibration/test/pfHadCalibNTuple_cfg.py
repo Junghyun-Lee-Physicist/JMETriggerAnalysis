@@ -43,7 +43,6 @@ opts.parseArguments()
 ###
 from JMETriggerAnalysis.Common.configs.HLT_dev_CMSSW_14_2_0_GRun_configDump import *
 ##from JMETriggerAnalysis.Common.configs.HLT_dev_CMSSW_14_0_0_GRun_configDump import *
-##from JMETriggerAnalysis.Common.configs.HLT_dev_CMSSW_13_3_0_GRun_configDump import *
 
 
 # remove cms.OutputModule objects from HLT config-dump

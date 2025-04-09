@@ -30,7 +30,8 @@ config.Data.publication = False
 #config.Data.allowNonValidInputDataset = True 
 
 config.section_("Site")
-config.Site.storageSite = 'T3_KR_KNU'
+#config.Site.storageSite = 'T3_KR_KNU'
+config.Site.storageSite = 'T3_CH_CERNBOX'
 #config.Site.whitelist = ['T2_CH_CERN']
 #config.Site.blacklist = ['T1_US_FNAL','T2_UK_London_Brunel']
 
@@ -46,11 +47,11 @@ def submitJob(config):
         print(f"Error submitting job {config.General.requestName}: {e}")
 
 # Loop over datasets
-for pionGun_E in [ '0p2to10', '0p2to200' ]:
+for pionGun_E in [ '0p2to10', '0p2to200', '200to500', '500to5000' ]:
     job_config = copy.deepcopy(config) # Create a fresh copy of config
 
     job_config.General.requestName = f"SinglePion_E_{pionGun_E}_{jobID}"
-    job_config.Data.outLFNDirBase = f"/store/user/{getUsername()}/PFHC_HLT_Ntuple/{jobID}/{job_config.General.requestName}"
+    job_config.Data.outLFNDirBase = f"/store/user/{getUsername()}/PFHC/ntuple/{jobID}/{job_config.General.requestName}"
     #config.Data.useParent = True
     #config.Data.lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON_NoL1T.txt'
 
