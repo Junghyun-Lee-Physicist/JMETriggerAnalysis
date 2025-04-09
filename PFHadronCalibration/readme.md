@@ -13,6 +13,8 @@ used in the High-Level Trigger (HLT).
 
 The first step to derive PFHCs is to create an NTuple with the relevant information for the calibration procedure.
 
+----------------------------
+
 ## CMSSW Environment Setup
 For Winter25 PFHC ntuples:
 ```bash
@@ -31,10 +33,12 @@ git clone git@github.com:theochatzis/JMETriggerAnalysis.git
 # Build
 scram b -j 12
 ```
+----------------------------
 
 ## Ntuple Production Using CRAB
 > [!NOTE]
 > - Before submit CRAB job, You need to check whether the current CMSSW version, the samples global tag, and the HLT menu all match!
+
 
 ```bash
 cd ${CMSSW_BASE}/src/JMETriggerAnalysis/PFHadronCalibration/test
@@ -49,6 +53,7 @@ source crabForNtupleGen/prepareCrabEnv.sh
 # Job Submit
 python3 crabForNtupleGen/multiCrab_PFHC_forHLT.py
 ```
+----------------------------
 
 PFHCs are derived using MC events simulating
 the production of a single-pion without pileup (NoPU),
