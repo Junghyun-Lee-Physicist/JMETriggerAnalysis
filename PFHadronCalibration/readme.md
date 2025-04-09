@@ -15,7 +15,7 @@ The first step to derive PFHCs is to create an NTuple with the relevant informat
 
 ----------------------------
 
-## CMSSW Environment Setup
+##### CMSSW Environment Setup
 For Winter25 PFHC ntuples:
 ```bash
 ssh <user id>@lxplus8.cern.ch
@@ -35,7 +35,7 @@ scram b -j 12
 ```
 ----------------------------
 
-## Ntuple Production Using CRAB
+##### Ntuple Production Using CRAB
 > [!NOTE]
 > - Before submit CRAB job, You need to check whether the current CMSSW version, the samples global tag, and the HLT menu all match!
 
