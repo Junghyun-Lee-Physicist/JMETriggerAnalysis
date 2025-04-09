@@ -2,20 +2,20 @@ This directory contains tools and instructions
 to derive the PF-Hadron calibrations (PFHCs)
 used in the High-Level Trigger (HLT).
 
-#### Introduction
+# Introduction
 
  * General description of the calibration methods,
    incl. references to the relevant documentation
    (publications, analysis notes, presentations, webpages)
 
 
-#### Production of NTuples for PFHCs
+# Production of NTuples for PFHCs
 
 The first step to derive PFHCs is to create an NTuple with the relevant information for the calibration procedure.
 
 ----------------------------
 
-##### CMSSW Environment Setup
+## CMSSW Environment Setup
 For Winter25 PFHC ntuples:
 ```bash
 ssh <user id>@lxplus8.cern.ch
@@ -35,7 +35,7 @@ scram b -j 12
 ```
 ----------------------------
 
-##### Ntuple Production Using CRAB
+## Ntuple Production Using CRAB
 > [!NOTE]
 > - Before submit CRAB job, You need to check whether the current CMSSW version, the samples global tag, and the HLT menu all match!
 
@@ -83,22 +83,22 @@ which contains information
 
 !! Add information on how to run the NTuple step with crab, HTCondor and/or other batch systems
 
-#### Derivation of PFHCs
+## Derivation of PFHCs
 
  * Given a set of input PFHC NTuples, how to analyse them to derive the PFHC functions
  * How to produce final `.db` file containing the PFHCs
 
-#### Validation of PFHCs
+## Validation of PFHCs
 
  * Given a set of PFHCs (i.e. a `.db` file containing the relevant records),
    how to validate this output, and verify that the corrections work as expected
 
-#### Delivery of PFHCs
+## Delivery of PFHCs
 
  * How to upload the relevant records to the appropriate database
  * How to integrate new PFHCs in a Global-Tag (GT)
 
-#### Available sets of PFHCs
+## Available sets of PFHCs
 
 List of the available PFHCs for HLT,
 with the necessary metadata to be able to reproduce them if needed.
