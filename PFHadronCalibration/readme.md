@@ -16,6 +16,8 @@ The first step to derive PFHCs is to create an NTuple with the relevant informat
 ## CMSSW Environment Setup
 For Winter25 PFHC ntuples:
 ```bash
+ssh <user id>@lxplus8.cern.ch
+
 cmsrel CMSSW_14_2_1
 cd CMSSW_14_2_1/src
 cmsenv
