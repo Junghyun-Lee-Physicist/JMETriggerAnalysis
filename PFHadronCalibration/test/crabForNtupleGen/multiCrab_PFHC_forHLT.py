@@ -1,74 +1,99 @@
-import CRABClient
-from CRABClient.UserUtilities import config, getUsername
-
-jobID="25Feb2025"
-
-config = config()
-
-config.section_("General")
-config.General.transferLogs = False
-config.General.workArea = f'CrabNTupleProduction_forOnlinePFHC_{jobID}'
-
-config.section_("JobType")
-config.JobType.pluginName  = 'Analysis'
-config.JobType.psetName    = 'pfHadCalibNTuple_cfg.py' # PFHC configure file
-config.JobType.outputFiles = ['pfHC_Online_NTuple.root']
-#config.JobType.numCores = 4
-config.JobType.allowUndistributedCMSSW = True # [ True ] for the recent version of CMSSW work
-config.JobType.maxMemoryMB = 2500
-
-config.section_("Data")
-config.Data.splitting = 'Automatic'
-config.Data.unitsPerJob = 180
-config.Data.totalUnits = -1
-#config.Data.splitting = 'FileBased'
-#config.Data.unitsPerJob = 500
-#config.Data.totalUnits = 6429
-config.Data.publication = False
-
-# To use the production state samples, activate below line
-#config.Data.allowNonValidInputDataset = True 
-
-config.section_("Site")
-#config.Site.storageSite = 'T3_KR_KNU'
-config.Site.storageSite = 'T3_CH_CERNBOX'
-#config.Site.whitelist = ['T2_CH_CERN']
-#config.Site.blacklist = ['T1_US_FNAL','T2_UK_London_Brunel']
-
+#!/usr/bin/env python3
+import os
+import argparse
+from CRABClient.UserUtilities import config as getConfig, getUsername
 from CRABAPI.RawCommand import crabCommand
-from multiprocessing import Process
-import copy
-import sys
 
-def submitJob(config):
+def makeConfig(energy, jobID, workArea):
+    """
+    Create and return a fresh CRAB config for the given pion-gun energy.
+    """
+    cfg = getConfig()
+
+    # General
+    cfg.section_("General")
+    cfg.General.workArea    = workArea
+    cfg.General.requestName = f"SinglePion_E_{energy}_{jobID}"
+    cfg.General.transferLogs = False
+
+    # JobType
+    cfg.section_("JobType")
+    cfg.JobType.pluginName              = 'Analysis'
+    cfg.JobType.psetName                = 'pfHadCalibNTuple_cfg.py'
+    cfg.JobType.outputFiles             = ['pfHC_Online_NTuple.root']
+    cfg.JobType.maxMemoryMB             = 2500
+    cfg.JobType.allowUndistributedCMSSW = True
+
+    # Data
+    cfg.section_("Data")
+    cfg.Data.splitting    = 'FileBased'
+    cfg.Data.unitsPerJob  = 2
+    cfg.Data.totalUnits   = -1
+    cfg.Data.publication  = False
+    cfg.Data.ignoreLocality = True 
+
+    # Site
+    cfg.section_("Site")
+    cfg.Site.storageSite = 'T2_CH_CERN'
+
+    return cfg
+
+def submit(cfg):
+    """Submit a fresh CRAB job."""
     try:
-        crabCommand('submit', config = config)
+        print(f"[Submit   ] {cfg.General.requestName}")
+        crabCommand('submit', config=cfg)
     except Exception as e:
-        print(f"Error submitting job {config.General.requestName}: {e}")
+        print(f"[Error    ] submit {cfg.General.requestName}: {e}")
 
-# Loop over datasets
-for pionGun_E in [ '0p2to10', '0p2to200', '200to500', '500to5000' ]:
-    job_config = copy.deepcopy(config) # Create a fresh copy of config
+def resubmit(taskDir):
+    """Resubmit failed jobs in the given CRAB project directory."""
+    if not os.path.isdir(taskDir):
+        print(f"[Warning  ] taskDir not found: {taskDir}")
+        return
+    try:
+        print(f"[Resubmit ] {taskDir}")
+        crabCommand('resubmit', dir=taskDir)
+    except Exception as e:
+        print(f"[Error    ] resubmit {taskDir}: {e}")
 
-    job_config.General.requestName = f"SinglePion_E_{pionGun_E}_{jobID}"
-    job_config.Data.outLFNDirBase = f"/store/user/{getUsername()}/PFHC/ntuple/{jobID}/{job_config.General.requestName}"
-    #config.Data.useParent = True
-    #config.Data.lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON_NoL1T.txt'
+def main():
+    parser = argparse.ArgumentParser(
+        description="Submit or resubmit CRAB jobs for PFHC ntuples"
+    )
+    parser.add_argument(
+        "--resubmit", action="store_true",
+        help="If set, resubmit failed jobs instead of fresh submissions"
+    )
+    args = parser.parse_args()
 
-    # Dataset selection
-    if pionGun_E == '0p2to10':
-        job_config.Data.inputDataset = '/Pi_Par-E-0p2to10_PGun/Run3Winter25Digi-NoPU_142X_mcRun3_2025_realistic_v7-v2/GEN-SIM-RAW'
-    elif pionGun_E == '0p2to200':
-        job_config.Data.inputDataset = '/Pi_Par-E-0p2to200_PGun/Run3Winter25Digi-NoPU_142X_mcRun3_2025_realistic_v7-v1/GEN-SIM-RAW'
-    elif pionGun_E == '200to500':
-        job_config.Data.inputDataset = '/Pi_Par-E-200to500_PGun/Run3Winter25Digi-NoPU_142X_mcRun3_2025_realistic_v7-v1/GEN-SIM-RAW'
-    elif pionGun_E == '500to5000':
-        job_config.Data.inputDataset = '/Pi_Par-E-500to5000_PGun/Run3Winter25Digi-NoPU_142X_mcRun3_2025_realistic_v7-v2/GEN-SIM-RAW'
-    else :
-        print("ERROR : There is wierd pion gun energy.. please take a look [ pionGun_E array]")
-        sys.exit(2)
+    jobID    = "21Apr2025"
+    workArea = f"NTupleProduction_forOnlinePFHC_{jobID}"
+    user     = getUsername()
 
-    p = Process(target=submitJob, args=(job_config,))
-    p.start()
-    p.join()
+    # Map from pion-gun energy to its input dataset
+    dataset_map = {
+        '0p2to10':   '/Pi_Par-E-0p2to10_PGun/Run3Winter25Digi-NoPU_142X_mcRun3_2025_realistic_v7-v2/GEN-SIM-RAW',
+        '0p2to200':  '/Pi_Par-E-0p2to200_PGun/Run3Winter25Digi-NoPU_142X_mcRun3_2025_realistic_v7-v1/GEN-SIM-RAW',
+        '200to500':  '/Pi_Par-E-200to500_PGun/Run3Winter25Digi-NoPU_142X_mcRun3_2025_realistic_v7-v1/GEN-SIM-RAW',
+        '500to5000': '/Pi_Par-E-500to5000_PGun/Run3Winter25Digi-NoPU_142X_mcRun3_2025_realistic_v7-v2/GEN-SIM-RAW',
+    }
 
+    for energy, dataset in dataset_map.items():
+        cfg = makeConfig(energy, jobID, workArea)
+
+        # Must specify input dataset and output LFN base
+        cfg.Data.inputDataset   = dataset
+        cfg.Data.outLFNDirBase  = (
+            f"/store/group/phys_jetmet/{user}/"
+            f"JMETriggerAnalysis/PFHC/ntuple/{jobID}/{cfg.General.requestName}"
+        )
+
+        taskDir = os.path.join(workArea, f"crab_{cfg.General.requestName}")
+        if args.resubmit:
+            resubmit(taskDir)
+        else:
+            submit(cfg)
+
+if __name__ == "__main__":
+    main()

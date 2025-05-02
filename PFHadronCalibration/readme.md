@@ -61,6 +61,9 @@ source crabForNtupleGen/prepareCrabEnv.sh
 
 # Job Submit
 python3 crabForNtupleGen/multiCrab_PFHC_forHLT.py
+
+# Job Resubmit
+python3 crabForNtupleGen/multiCrab_PFHC_forHLT.py --resubmit
 ```
 ----------------------------
 
